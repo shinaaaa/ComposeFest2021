@@ -18,16 +18,17 @@ package com.codelabs.state.todo
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.Icon
-import androidx.compose.material.LocalContentColor
-import androidx.compose.material.Text
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.codelabs.state.util.generateRandomTodoItem
@@ -98,33 +99,27 @@ fun TodoInputTextField(text: String, onTextChange: (String) -> Unit, modifier: M
     TodoInputText(text, onTextChange, modifier)
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun TodoItemInput(onItemComplete: (TodoItem) -> Unit) {
-    val (text, setText) = remember { mutableStateOf("") }
-    Column {
-        Row(
-            Modifier
-                .padding(horizontal = 16.dp)
-                .padding(top = 16.dp)
-        ) {
-            TodoInputText(
-                text = text,
-                onTextChange = setText,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp)
-            )
-            TodoEditButton(
-                onClick = {
-                    onItemComplete(TodoItem(text))
-                    setText("")
-                },
-                text = "Add",
-                modifier = Modifier.align(Alignment.CenterVertically),
-                enabled = text.isNotBlank()
-            )
-        }
-    }
+fun TodoInputText(
+    text: String,
+    onTextChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    onImeAction: () -> Unit = {}
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    TextField(
+        value = text,
+        onValueChange = onTextChange,
+        colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.Transparent),
+        maxLines = 1,
+        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = {
+            onImeAction()
+            keyboardController?.hide()
+        }),
+        modifier = modifier
+    )
 }
 
 private fun randomTint(): Float {
@@ -145,4 +140,4 @@ fun PreviewTodoScreen() {
 
 @Preview
 @Composable
-fun PreviewTodoItemInput() = TodoItemInput(onItemComplete = { })
+//fun PreviewTodoItemInput() = TodoItemInput(onItemComplete = { })
